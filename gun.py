@@ -114,6 +114,9 @@ class gun():
 
 class target():
     def __init__(self, points=0):
+        self.x = rnd(100, 700)
+        self.y = rnd(100, 500)
+        self.r = rnd(20, 50)
         self.id = canv.create_oval(0, 0, 0, 0)
         self.points = points
         self.new_target()
@@ -123,9 +126,9 @@ class target():
         self.live = 1
 
     def new_target(self):
-        x = self.x = rnd(600, 780)
-        y = self.y = rnd(300, 550)
-        r = self.r = rnd(2, 50)
+        x = self.x = rnd(100, 700)
+        y = self.y = rnd(100, 500)
+        r = self.r = rnd(20, 50)
         color = self.color = 'red'
         canv.coords(self.id, x - r, y - r, x + r, y + r)
         canv.itemconfig(self.id, fill=color)
@@ -135,39 +138,57 @@ class game:
     def __init__(self):
         self.balls = []
         self.bullet = 0
-        self.target1 = target()
+        self.targets = [target() for _ in range(2)]
         self.g1 = gun(self)
+        self.goon = 1
         self.points = 0
         self.id_points = canv.create_text(30, 30, text=self.points, font='40')
 
     def new_game(self, event=''):
         screen1 = canv.create_text(400, 300, text='', font='28')
-        self.target1.new_target()
+        for i in range(2):
+            self.targets[i].new_target()
+            self.targets[i].live = 1
         self.balls = []
         self.bullet = 0
         canv.bind('<Button-1>', self.g1.fire2_start)
         canv.bind('<ButtonRelease-1>', self.g1.fire2_end)
         canv.bind('<Motion>', self.g1.targetting)
-        self.target1.live = 1
-        while self.target1.live or self.balls:
+        self.goon = 1
+        while self.goon or self.balls:
             for b in self.balls:
                 b.move()
-                if b.hittest(self.target1) and self.target1.live:
-                    self.target1.live = 0
-                    self.hit()
-                    canv.bind('<Button-1>', '')
-                    canv.bind('<ButtonRelease-1>', '')
-                    canv.itemconfig(screen1, text='Вы уничтожили цель за ' + str(self.bullet) + ' выстрелов')
-
+                for i in self.targets:
+                    if b.hittest(i) and i.live:
+                        i.live = 0
+                        self.hit(i)
+                        self.livecheck()
+                        if self.goon == 0:
+                            if (self.bullet % 10 == 1):
+                                canv.itemconfig(screen1, text='Вы уничтожили цель за ' + str(self.bullet) + ' выстрел')
+                            elif ((self.bullet % 10 >= 2) and (self.bullet % 10 <= 4)):
+                                canv.itemconfig(screen1, text='Вы уничтожили цель за ' + str(self.bullet) + ' выстрела')
+                            else:
+                                canv.itemconfig(screen1,
+                                                text='Вы уничтожили цель за ' + str(self.bullet) + ' выстрелов')
+                            canv.update()
             canv.update()
             time.sleep(0.03)
             self.g1.targetting()
             self.g1.power_up()
-        canv.itemconfig(screen1, text='')
+        else:
+            canv.delete(screen1)
+        canv.delete(self.targets)
         root.after(500, self.new_game)
 
-    def hit(self, points=1):
-        canv.coords(self.target1.id, -10, -10, -10, -10)
+    def livecheck(self):
+        if ((self.targets[0].live == 0) and (self.targets[1].live == 0)):
+            self.goon = 0
+        else:
+            self.goon = 1
+
+    def hit(self, i, points=1):
+        canv.coords(i.id, -10, -10, -10, -10)
         self.points += points
         canv.itemconfig(self.id_points, text=self.points)
 
