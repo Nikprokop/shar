@@ -40,7 +40,7 @@ class ball():
         )
 
     def move(self):
-        if self.y <= 500:
+        if self.y <= 550:
             self.vy -= 1.1
             self.y -= self.vy
             self.x += self.vx
@@ -49,10 +49,10 @@ class ball():
         if self.x > 780:
             self.vx = -self.vx / 2
             self.x = 779
-        if self.y > 500:
+        if self.y > 550:
             self.vy = -self.vy / 2
             self.vx = self.vx / 2
-            self.y = 499
+            self.y = 549
         if self.live < 0:
             self.game.balls.pop(self.game.balls.index(self))
             canv.delete(self.id)
@@ -117,6 +117,8 @@ class target():
         self.x = rnd(100, 700)
         self.y = rnd(100, 500)
         self.r = rnd(20, 50)
+        self.vx = rnd(-10, 10)
+        self.vy = rnd(-10, 10)
         self.id = canv.create_oval(0, 0, 0, 0)
         self.points = points
         self.new_target()
@@ -132,6 +134,15 @@ class target():
         color = self.color = 'red'
         canv.coords(self.id, x - r, y - r, x + r, y + r)
         canv.itemconfig(self.id, fill=color)
+
+    def move_target(self):
+        canv.move(self.id, self.vx, self.vy)
+        self.x += self.vx
+        self.y += self.vy
+        if (self.x + self.r) >= 800 or (self.x - self.r) <= 0:
+            self.vx = -self.vx
+        if (self.y + self.r) >= 600 or (self.y - self.r) <= 0:
+            self.vy = -self.vy
 
 
 class game:
@@ -159,6 +170,8 @@ class game:
         canv.bind('<Motion>', self.g1.targetting)
         self.goon = 1
         while self.goon or self.balls:
+            for a in self.targets:
+                a.move_target()
             for b in self.balls:
                 b.move()
                 for i in self.targets:
