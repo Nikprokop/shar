@@ -138,7 +138,8 @@ class game:
     def __init__(self):
         self.balls = []
         self.bullet = 0
-        self.targets = [target() for _ in range(2)]
+        self.tnumbers = rnd(2, 5)
+        self.targets = []
         self.g1 = gun(self)
         self.goon = 1
         self.points = 0
@@ -146,7 +147,9 @@ class game:
 
     def new_game(self, event=''):
         screen1 = canv.create_text(400, 300, text='', font='28')
-        for i in range(2):
+        self.tnumbers = rnd(2, 5)
+        self.targets = [target() for _ in range(self.tnumbers)]
+        for i in range(self.tnumbers):
             self.targets[i].new_target()
             self.targets[i].live = 1
         self.balls = []
@@ -182,7 +185,11 @@ class game:
         root.after(500, self.new_game)
 
     def livecheck(self):
-        if ((self.targets[0].live == 0) and (self.targets[1].live == 0)):
+        self.k = 0
+        for i in range(self.tnumbers):
+            if (self.targets[i].live == 0):
+                self.k += 1
+        if (self.k == self.tnumbers):
             self.goon = 0
         else:
             self.goon = 1
